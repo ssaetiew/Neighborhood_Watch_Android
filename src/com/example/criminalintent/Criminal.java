@@ -1,6 +1,7 @@
 package com.example.criminalintent;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ public class Criminal {
 		mId = UUID.randomUUID();//Generate unique ID
 		//formattedString = DateFormat.getDateInstance().format(mDate);
 		mDate = new Date();
+		
 	}
 
 	public String getTitle() {

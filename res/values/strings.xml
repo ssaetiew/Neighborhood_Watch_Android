@@ -7,4 +7,5 @@
 	<string name="crime_details_tv">Details</string>
 	<string name="crime_solved_Cb">Is it solved?</string>
 	<string name="crimes_title">Crimes</string>
+	<string name="date_picker_title">Date of crime:</string>
 </resources>

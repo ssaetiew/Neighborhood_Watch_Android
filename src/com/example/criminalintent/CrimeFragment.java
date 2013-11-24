@@ -3,10 +3,14 @@
  */
 package com.example.criminalintent;
 
+import java.util.Date;
 import java.util.UUID;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,7 +24,9 @@ import android.widget.EditText;
 
 public class CrimeFragment extends Fragment implements OnCheckedChangeListener{
 		
-		static final String EXTRA_CRIME_ID = "com.example.criminalintent.crime_id";
+		 static final String EXTRA_CRIME_ID = "com.example.criminalintent.crime_id";
+		private static final String DIALOG_DATE = "date"; 
+		private static final int REQUEST_DATE = 0;//Code for getting date from DatePickerFragment
 		private Criminal mCrime;
 		private EditText mTitle;
 		private Button mDateBt;
@@ -44,8 +50,28 @@ public class CrimeFragment extends Fragment implements OnCheckedChangeListener{
 			View v = inflater.inflate(R.layout.fragment_crime, container, false);//false because I will add the view in the activity's code not its parent(container).
 			mTitle = (EditText) v.findViewById(R.id.crimeTitleEt);
 			mDateBt = (Button) v.findViewById(R.id.crime_date_bt);
-			mDateBt.setText(mCrime.getDate().toString());
-			mDateBt.setEnabled(false);
+			//mDateBt.setText(mCrime.getDate().toString());
+			updateDate();
+			
+			//Change to this code if we don't want date to be picked mDateBt.setEnabled(false);
+			mDateBt.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					FragmentManager fm = getActivity().getSupportFragmentManager();
+					
+					//DatePickerFragment dialog = new DatePickerFragment();
+					//Instead of the above code, below code is used to get argument 
+					DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+					
+					//Setup setTargetFragment so we can get date back (Similar to startActivityForResult() but 
+					//setTargetFragment is between fragments)
+					dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+					dialog.show(fm, DIALOG_DATE);
+				}
+			});
+			
 			mSolvedCb = (CheckBox) v.findViewById(R.id.crime_solved);
 			mTitle.setText(mCrime.getTitle());
 			mTitle.addTextChangedListener(new TextWatcher() {
@@ -90,6 +116,24 @@ public class CrimeFragment extends Fragment implements OnCheckedChangeListener{
 			CrimeFragment fragment = new CrimeFragment();
 			fragment.setArguments(args);
 			return fragment;
+		}
+
+		@Override
+		public void onActivityResult(int requestCode, int resultCode,
+				Intent data) {
+			// TODO Auto-generated method stub
+			if(resultCode != Activity.RESULT_OK) return;
+			if(requestCode == REQUEST_DATE)
+			{
+				Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+				mCrime.setDate(date);
+				updateDate();
+			}
+		}
+		
+		public void updateDate()
+		{
+			mDateBt.setText(mCrime.getDate().toString());
 		}
 		
 		

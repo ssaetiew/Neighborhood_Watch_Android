@@ -2,9 +2,15 @@ package com.example.criminalintent;
 
 import java.util.ArrayList;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -16,10 +22,16 @@ public class CrimeListFragment extends ListFragment {
 
 	private static final String TAG = "CrimeListFragment";
 	private ArrayList<Criminal> mCrimes;
+	private boolean mSubtitleVisible;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		
+		//Retain rotation config
+		setRetainInstance(true);
+		mSubtitleVisible = false;
+		setHasOptionsMenu(true);
 		getActivity().setTitle(R.string.crimes_title);//Set title to be displayed on Activity's action bar
 		
 		//Get a list of criminal
@@ -41,6 +53,8 @@ public class CrimeListFragment extends ListFragment {
 		super.onResume();
 		((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
 	}
+	
+	
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
@@ -57,6 +71,75 @@ public class CrimeListFragment extends ListFragment {
 		i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
 		startActivity(i);
 	}
+	
+	//Set Menu items
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+	{
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.fragment_crime_list, menu);
+		
+		//Make sure you're displaying the correct menu item title
+		MenuItem showSubtitle = menu.findItem(R.id.menu_item_show_subtitle);
+		if(mSubtitleVisible && showSubtitle != null)
+		{
+			showSubtitle.setTitle(R.string.hide_subtitle);
+		}
+	}
+	
+	
+
+	@TargetApi(11)
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch(item.getItemId())
+		{
+		case R.id.menu_item_new_crime:
+			Criminal crime = new Criminal();
+			CrimeLab.get(getActivity()).addCrime(crime);
+			Intent i = new Intent(getActivity(), CrimePagerActivity.class);
+			i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
+			startActivityForResult(i, 0);
+			return true;
+		case R.id.menu_item_show_subtitle:
+			if(getActivity().getActionBar().getSubtitle() == null)
+			{
+			getActivity().getActionBar().setSubtitle(R.string.subtitle);
+			item.setTitle(R.string.hide_subtitle);
+			mSubtitleVisible = true;
+			}
+			else
+			{
+				getActivity().getActionBar().setSubtitle(null);
+				item.setTitle(R.string.show_subtitle);
+				mSubtitleVisible = false;
+			}
+			return true;
+			default:
+				return super.onOptionsItemSelected(item);
+
+		}
+	}
+
+	//Check if subtitle should be shown when orientation changes
+	@TargetApi(11)
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		View v = super.onCreateView(inflater, container, savedInstanceState);
+		
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+		{
+			if(mSubtitleVisible)
+			{
+				getActivity().getActionBar().setSubtitle(R.string.subtitle);
+			}
+		}
+		return v;
+	}
+	
 	
 	//Need to create inner class so our custom layout called list_item_crime can be displayed
 	//Thus, new adapter that need to know about Criminal need to be made
